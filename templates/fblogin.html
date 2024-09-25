@@ -9,6 +9,8 @@
             FB.login(function(response) {
                 if (response.authResponse) {
                     // Send the token to your backend API
+                    var accessToken = response.authResponse.accessToken;
+                    console.log('User Access Token:', accessToken);
                     fetch('/facebook/callback', {
                         method: 'POST',
                         headers: {
