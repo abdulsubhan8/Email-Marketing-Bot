@@ -4,50 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook Login</title>
-    <!-- Load the Facebook SDK for JavaScript -->
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
     <script>
-        window.fbAsyncInit = function() {
-            FB.init({
-                appId: '1235591774301394', // Replace with your Facebook App ID
-                cookie: true,
-                xfbml: true,
-                version: 'v16.0'
-            });
-        };
-
-        function loginWithFacebook() {
+        function fbLogin() {
             FB.login(function(response) {
                 if (response.authResponse) {
-                    console.log('User logged in successfully.');
-                    // Send the access token to your backend
-                    fetch('/facebook_login', {
+                    // Send the token to your backend API
+                    fetch('/facebook/callback', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ access_token: response.authResponse.accessToken })
+                        body: JSON.stringify({
+                            token: response.authResponse.accessToken
+                        })
                     })
-                    .then(response => response.json())
+                    .then(res => res.json())
                     .then(data => {
-                        console.log('User info from backend:', data);
-                        document.getElementById('profile-info').innerHTML = `
-                            <p>Logged in as: ${data.name}</p>
-                            <p>Email: ${data.email}</p>
-                        `;
+                        console.log('Success:', data);
+                        // Handle the response from your backend
+                        alert('Logged in as ' + data.user.name);
                     })
-                    .catch(error => console.error('Error:', error));
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
                 } else {
-                    console.log('User cancelled login or did not fully authorize.');
+                    console.log('User cancelled login or failed.');
                 }
-            }, { scope: 'email,public_profile' });
+            }, {scope: 'email,public_profile'});
         }
+
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : 'YOUR_FACEBOOK_APP_ID', // Replace with your Facebook App ID
+                cookie     : true,
+                xfbml      : true,
+                version    : 'v14.0' // Replace with the current version
+            });
+        };
+
+        (function(d, s, id){
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {return;}
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
     </script>
 </head>
 <body>
-    <h1>Login with Facebook</h1>
-    <button onclick="loginWithFacebook()">Login with Facebook</button>
-
-    <div id="profile-info" style="margin-top: 20px;"></div>
+    <h1>Facebook Login</h1>
+    <button onclick="fbLogin()">Login with Facebook</button>
 </body>
 </html>
