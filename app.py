@@ -9,7 +9,7 @@ FACEBOOK_APP_SECRET = 'd70f93af8fcd1725f35924feea04e76f'
 
 @app.route('/')
 def index():
-    return render_template('fb_login.html')  # Serve the frontend page
+    return render_template('fblogin.html')  # Serve the frontend page
 
 @app.route('/facebook/callback', methods=['POST'])
 def facebook_callback():
