@@ -30,7 +30,7 @@
                 } else {
                     console.log('User cancelled login or failed.');
                 }
-            }, {scope: 'email,public_profile'});
+            }, {scope: 'email,public_profile,instagram_basic'}); // Add any other scopes here
         }
 
         window.fbAsyncInit = function() {
