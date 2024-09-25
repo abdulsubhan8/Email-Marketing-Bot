@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook Login</title>
     <script>
-        // Initialize the Facebook SDK
+        // Function to initialize Facebook SDK
         window.fbAsyncInit = function() {
             FB.init({
-                appId      : 'YOUR_APP_ID', // Replace with your Facebook App ID
+                appId      : '1235591774301394', // Replace with your Facebook App ID
                 cookie     : true,
                 xfbml      : true,
                 version    : 'v14.0' // Replace with the current version
@@ -26,31 +26,58 @@
 
         // Function to handle Facebook login
         function fbLogin() {
-            FB.login(function(response) {
-                if (response.authResponse) {
-                    var accessToken = response.authResponse.accessToken;
-                    console.log('User Access Token:', accessToken);
-
-                    // Send the access token to your backend
-                    fetch('/facebook/callback', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ token: accessToken })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Backend response:', data);
-                        alert('Logged in as ' + data.user.name);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                } else {
-                    console.log('User cancelled login or failed.');
-                }
-            }, {scope: 'pages_manage_posts,pages_read_engagement,email,public_profile'});
+            // Check if FB is initialized before calling login
+            if (typeof FB !== 'undefined') {
+                FB.getLoginStatus(function(response) {
+                    if (response.status === 'connected') {
+                        // User is already logged in, send token to backend
+                        var accessToken = response.authResponse.accessToken;
+                        console.log('User Access Token:', accessToken);
+                        fetch('/facebook/callback', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ token: accessToken })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Backend response:', data);
+                            alert('Logged in as ' + data.user.name);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    } else {
+                        // User is not logged in, proceed with login
+                        FB.login(function(response) {
+                            if (response.authResponse) {
+                                var accessToken = response.authResponse.accessToken;
+                                console.log('User Access Token:', accessToken);
+                                fetch('/facebook/callback', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ token: accessToken })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log('Backend response:', data);
+                                    alert('Logged in as ' + data.user.name);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                });
+                            } else {
+                                console.log('User cancelled login or failed.');
+                            }
+                        }, {scope: 'pages_manage_posts,pages_read_engagement,email,public_profile'});
+                    }
+                });
+            } else {
+                console.error('Facebook SDK not initialized.');
+            }
         }
     </script>
 </head>
