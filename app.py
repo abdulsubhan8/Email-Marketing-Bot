@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify
-from flask import Flask, request, jsonify, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 import requests
 
 app = Flask(__name__)
@@ -7,13 +6,11 @@ app = Flask(__name__)
 # Replace with your actual Facebook App ID and App Secret
 FACEBOOK_APP_ID = '1235591774301394'
 FACEBOOK_APP_SECRET = 'd70f93af8fcd1725f35924feea04e76f'
-FACEBOOK_REDIRECT_URI = 'https://email-marketing-bot.vercel.app/facebook/callback'  # Replace with your actual redirect URI
 
 @app.route('/')
-def home():
-    return 'Facebook Login Home. Frontend with Facebook button is served separately.'
+def index():
+    return render_template('fb_login.html')  # Serve the frontend page
 
-# Endpoint to handle the Facebook token received from frontend
 @app.route('/facebook/callback', methods=['POST'])
 def facebook_callback():
     data = request.json
@@ -38,7 +35,7 @@ def facebook_callback():
     if 'error' in user_info:
         return jsonify({"error": "Failed to retrieve user info"}), 400
 
-    # Respond with user info or handle further logic (save to DB, etc.)
+    # Respond with user info
     return jsonify({
         "success": True,
         "message": f"Welcome, {user_info['name']}",
@@ -47,3 +44,5 @@ def facebook_callback():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
