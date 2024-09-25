@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Login</title>
+    <!-- Load the Facebook SDK for JavaScript -->
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+    <script>
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId: '1235591774301394', // Replace with your Facebook App ID
+                cookie: true,
+                xfbml: true,
+                version: 'v16.0'
+            });
+        };
+
+        function loginWithFacebook() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    console.log('User logged in successfully.');
+                    // Send the access token to your backend
+                    fetch('/facebook_login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ access_token: response.authResponse.accessToken })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('User info from backend:', data);
+                        document.getElementById('profile-info').innerHTML = `
+                            <p>Logged in as: ${data.name}</p>
+                            <p>Email: ${data.email}</p>
+                        `;
+                    })
+                    .catch(error => console.error('Error:', error));
+                } else {
+                    console.log('User cancelled login or did not fully authorize.');
+                }
+            }, { scope: 'email,public_profile' });
+        }
+    </script>
+</head>
+<body>
+    <h1>Login with Facebook</h1>
+    <button onclick="loginWithFacebook()">Login with Facebook</button>
+
+    <div id="profile-info" style="margin-top: 20px;"></div>
+</body>
+</html>
