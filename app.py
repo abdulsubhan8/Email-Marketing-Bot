@@ -1,32 +1,49 @@
 from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for
 import requests
 
 app = Flask(__name__)
 
-# Facebook Graph API URL for user profile info
-FACEBOOK_GRAPH_API_URL = 'https://graph.facebook.com/me'
+# Replace with your actual Facebook App ID and App Secret
+FACEBOOK_APP_ID = '1235591774301394'
+FACEBOOK_APP_SECRET = 'd70f93af8fcd1725f35924feea04e76f'
+FACEBOOK_REDIRECT_URI = 'https://email-marketing-bot.vercel.app/facebook/callback'  # Replace with your actual redirect URI
 
-# Facebook App Secret (replace with your credentials)
-FACEBOOK_APP_SECRET = 'YOUR_APP_SECRET'
+@app.route('/')
+def home():
+    return 'Facebook Login Home. Frontend with Facebook button is served separately.'
 
-@app.route('/facebook_login', methods=['POST'])
-def facebook_login():
-    # Get the access token from the frontend
+# Endpoint to handle the Facebook token received from frontend
+@app.route('/facebook/callback', methods=['POST'])
+def facebook_callback():
     data = request.json
-    access_token = data.get('access_token')
+    access_token = data.get('token')
 
-    if access_token:
-        # Verify the access token and get user profile data
-        user_info_url = f'{FACEBOOK_GRAPH_API_URL}?fields=id,name,email&access_token={access_token}'
-        response = requests.get(user_info_url)
-        user_data = response.json()
+    if not access_token:
+        return jsonify({"error": "No token provided"}), 400
 
-        if 'error' in user_data:
-            return jsonify({'error': 'Invalid access token'}), 400
+    # Verify the access token with Facebook's API
+    token_debug_url = f"https://graph.facebook.com/debug_token?input_token={access_token}&access_token={FACEBOOK_APP_ID}|{FACEBOOK_APP_SECRET}"
+    token_response = requests.get(token_debug_url)
+    token_info = token_response.json()
 
-        return jsonify(user_data), 200
-    else:
-        return jsonify({'error': 'Access token is missing'}), 400
+    if 'error' in token_info['data']:
+        return jsonify({"error": "Invalid token"}), 400
+
+    # Get user info from Facebook's Graph API
+    user_info_url = f"https://graph.facebook.com/me?fields=id,name,email&access_token={access_token}"
+    user_info_response = requests.get(user_info_url)
+    user_info = user_info_response.json()
+
+    if 'error' in user_info:
+        return jsonify({"error": "Failed to retrieve user info"}), 400
+
+    # Respond with user info or handle further logic (save to DB, etc.)
+    return jsonify({
+        "success": True,
+        "message": f"Welcome, {user_info['name']}",
+        "user": user_info
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
