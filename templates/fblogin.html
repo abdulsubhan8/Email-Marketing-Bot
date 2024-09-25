@@ -5,39 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook Login</title>
     <script>
-        function fbLogin() {
-            FB.login(function(response) {
-                if (response.authResponse) {
-                    // Send the token to your backend API
-                    var accessToken = response.authResponse.accessToken;
-                    console.log('User Access Token:', accessToken);
-                    fetch('/facebook/callback', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            token: response.authResponse.accessToken
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log('Success:', data);
-                        // Handle the response from your backend
-                        alert('Logged in as ' + data.user.name);
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                } else {
-                    console.log('User cancelled login or failed.');
-                }
-            }, {scope: 'email,public_profile,instagram_basic'}); // Add any other scopes here
-        }
-
         window.fbAsyncInit = function() {
             FB.init({
-                appId      : '1235591774301394', // Replace with your Facebook App ID
+                appId      : 'YOUR_APP_ID', // Replace with your Facebook App ID
                 cookie     : true,
                 xfbml      : true,
                 version    : 'v14.0' // Replace with the current version
@@ -51,6 +21,18 @@
             js.src = "https://connect.facebook.net/en_US/sdk.js";
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
+
+        function fbLogin() {
+            FB.login(function(response) {
+                if (response.authResponse) {
+                    var accessToken = response.authResponse.accessToken;
+                    console.log('User Access Token:', accessToken);
+                    // Send the accessToken to your backend
+                } else {
+                    console.log('User cancelled login or failed.');
+                }
+            }, {scope: 'pages_manage_posts,pages_read_engagement,email,public_profile'});
+        }
     </script>
 </head>
 <body>
