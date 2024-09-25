@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facebook Login</title>
     <script>
+        // Initialize the Facebook SDK
         window.fbAsyncInit = function() {
             FB.init({
                 appId      : 'YOUR_APP_ID', // Replace with your Facebook App ID
@@ -14,6 +15,7 @@
             });
         };
 
+        // Load the Facebook SDK script
         (function(d, s, id){
             var js, fjs = d.getElementsByTagName(s)[0];
             if (d.getElementById(id)) {return;}
@@ -22,12 +24,29 @@
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));
 
+        // Function to handle Facebook login
         function fbLogin() {
             FB.login(function(response) {
                 if (response.authResponse) {
                     var accessToken = response.authResponse.accessToken;
                     console.log('User Access Token:', accessToken);
-                    // Send the accessToken to your backend
+
+                    // Send the access token to your backend
+                    fetch('/facebook/callback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ token: accessToken })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Backend response:', data);
+                        alert('Logged in as ' + data.user.name);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
                 } else {
                     console.log('User cancelled login or failed.');
                 }
