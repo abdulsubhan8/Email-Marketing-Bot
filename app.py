@@ -10,7 +10,56 @@ FACEBOOK_APP_SECRET = 'd70f93af8fcd1725f35924feea04e76f'
 @app.route('/')
 def index():
     return render_template('fblogin.html')  # Serve the frontend page
+    
+FB_GRAPH_API_URL = "https://graph.facebook.com/v12.0"
 
+@app.route('/instagram-data', methods=['GET', 'POST'])
+def instagram_data():
+    if request.method == 'GET':
+        # Render a template for GET requests
+        return render_template('login.html')
+    
+    if request.method == 'POST':
+        try:
+            access_token = request.json.get('access_token')
+    
+            if not access_token:
+                return jsonify({"error": "Access token is required"}), 400
+    
+            pages_url = f"{FB_GRAPH_API_URL}/me/accounts"
+            pages_response = requests.get(pages_url, params={'access_token': access_token})
+    
+            if pages_response.status_code != 200:
+                return jsonify({"error": "Failed to fetch Facebook Pages"}), pages_response.status_code
+    
+            pages_data = pages_response.json()
+            instagram_business_id = None
+            for page in pages_data.get('data', []):
+                if 'instagram_business_account' in page:
+                    instagram_business_id = page['instagram_business_account']['id']
+                    break
+    
+            if not instagram_business_id:
+                return jsonify({"error": "No Instagram Business Account linked to Facebook Pages"}), 404
+    
+            instagram_media_url = f"{FB_GRAPH_API_URL}/{instagram_business_id}/media"
+            media_response = requests.get(instagram_media_url, params={'access_token': access_token})
+    
+            if media_response.status_code != 200:
+                return jsonify({"error": "Failed to fetch Instagram Media"}), media_response.status_code
+    
+            media_data = media_response.json()
+    
+            return jsonify({
+                "instagram_media": media_data,
+                "message": "Successfully retrieved Instagram media."
+            }), 200
+    
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
+        
 @app.route('/facebook/callback', methods=['POST'])
 def facebook_callback():
     data = request.json
