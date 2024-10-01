@@ -79,10 +79,28 @@
                 console.error('Facebook SDK not initialized.');
             }
         }
+
+        // Function to handle Facebook logout
+        function fbLogout() {
+            FB.getLoginStatus(function(response) {
+                if (response.status === 'connected') {
+                    FB.logout(function(response) {
+                        console.log('User logged out from Facebook.');
+                        alert('You have been logged out from Facebook.');
+                    });
+                } else {
+                    alert('You are not logged in.');
+                }
+            });
+        }
     </script>
 </head>
 <body>
     <h1>Facebook Login</h1>
+    <!-- Login Button -->
     <button onclick="fbLogin()">Login with Facebook</button>
+    
+    <!-- Logout Button -->
+    <button onclick="fbLogout()">Logout from Facebook</button>
 </body>
 </html>
